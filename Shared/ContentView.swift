@@ -9,31 +9,39 @@ import SwiftUI
 import CoreData
 
 struct ContentView: View {
+    // 使用环境变量
     @Environment(\.managedObjectContext) private var viewContext
-
+    
+    // 请求数据
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \Item.timestamp, ascending: true)],
         animation: .default)
+    
+    // 数据
     private var items: FetchedResults<Item>
 
     var body: some View {
+        // 遍历数据显示
         List {
             ForEach(items) { item in
                 Text("Item at \(item.timestamp!, formatter: itemFormatter)")
             }
             .onDelete(perform: deleteItems)
         }
+        // 工具栏
         .toolbar {
             #if os(iOS)
             EditButton()
             #endif
-
+            
+            // 添加新item的按钮
             Button(action: addItem) {
                 Label("Add Item", systemImage: "plus")
             }
         }
     }
-
+    
+    // 添加新item
     private func addItem() {
         withAnimation {
             let newItem = Item(context: viewContext)
@@ -49,7 +57,8 @@ struct ContentView: View {
             }
         }
     }
-
+    
+    // 移除item
     private func deleteItems(offsets: IndexSet) {
         withAnimation {
             offsets.map { items[$0] }.forEach(viewContext.delete)
@@ -66,6 +75,7 @@ struct ContentView: View {
     }
 }
 
+// item格式化
 private let itemFormatter: DateFormatter = {
     let formatter = DateFormatter()
     formatter.dateStyle = .short
@@ -73,6 +83,7 @@ private let itemFormatter: DateFormatter = {
     return formatter
 }()
 
+// 预览视图
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView().environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
